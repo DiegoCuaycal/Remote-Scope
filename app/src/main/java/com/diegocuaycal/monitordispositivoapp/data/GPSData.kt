@@ -9,5 +9,9 @@ data class GPSData(
     val deviceId: String,
     val latitude: Double,
     val longitude: Double,
-    val timestamp: Long
+    val timestamp: Long,
+    val provider: String,
+    val accuracy: Float,
+    val altitude: Double,
+    val speed: Float
 )

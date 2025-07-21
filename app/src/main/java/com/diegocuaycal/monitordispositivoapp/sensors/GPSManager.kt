@@ -57,8 +57,15 @@ class GPSManager(private val context: Context) : LocationListener {
                 android.provider.Settings.Secure.ANDROID_ID
             )
 
+            val provider = location.provider ?: "Unknown"
+            val accuracy = location.accuracy
+            val altitude = location.altitude
+            val speed = location.speed
+
+
             // Log completo
-            Log.d("GPSManager", "Lat: $latitude, Long: $longitude, Timestamp: $timestamp, DeviceID: $deviceId")
+            Log.d("GPSManager", "Lat: $latitude, Long: $longitude, Timestamp: $timestamp, DeviceID: $deviceId, Provider: $provider, Accuracy: $accuracy m, Altitude: $altitude m, Speed: $speed m/s")
+
 
             if (!GPSConfig.estaDentroDelHorario(context)) {
                 Log.d("GPSManager", "Ubicación descartada por fuera de horario permitido")
@@ -69,7 +76,11 @@ class GPSManager(private val context: Context) : LocationListener {
                 deviceId = deviceId,
                 latitude = latitude,
                 longitude = longitude,
-                timestamp = timestamp
+                timestamp = timestamp,
+                provider = provider,
+                accuracy = accuracy,
+                altitude = altitude,
+                speed = speed
             )
 
             val db = AppDatabase.getDatabase(context)
