@@ -12,4 +12,8 @@ interface GPSDataDao {
 
     @Query("SELECT * FROM gps_data ORDER BY timestamp DESC")
     suspend fun getAll(): List<GPSData>
+
+    @Query("SELECT * FROM gps_data WHERE timestamp BETWEEN :startTime AND :endTime")
+    fun getDataBetweenTimestamps(startTime: Long, endTime: Long): List<GPSData>
+
 }

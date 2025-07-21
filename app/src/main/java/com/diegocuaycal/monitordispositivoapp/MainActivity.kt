@@ -12,13 +12,14 @@ import androidx.core.view.WindowInsetsCompat
 import com.diegocuaycal.monitordispositivoapp.sensors.GPSManager
 import com.diegocuaycal.monitordispositivoapp.data.AppDatabase
 import com.diegocuaycal.monitordispositivoapp.data.ConfiguracionGPS
+import com.diegocuaycal.monitordispositivoapp.network.APIServer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var gpsManager: GPSManager
+    private lateinit var apiServer: APIServer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +34,11 @@ class MainActivity : AppCompatActivity() {
         gpsManager = GPSManager(this)
         configurarRecoleccionGPS()
         solicitarPermisosUbicacion()
+
+        // Iniciar servidor API
+        apiServer = APIServer(this)
+        apiServer.start()
+        android.util.Log.d("MainActivity", "Servidor HTTP iniciado en el puerto 8080")
     }
 
     private fun solicitarPermisosUbicacion() {
@@ -42,7 +48,6 @@ class MainActivity : AppCompatActivity() {
             gpsManager.startLocationUpdates()
             android.util.Log.d("MainActivity", "Permiso ya concedido. Iniciando GPSManager")
         }
-
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -54,8 +59,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             android.util.Log.d("MainActivity", "Permiso de ubicación denegado por el usuario.")
         }
-
     }
+
     private fun configurarRecoleccionGPS() {
         val db = AppDatabase.getDatabase(this)
         val dao = db.configuracionGPSDao()
@@ -73,9 +78,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
         gpsManager.stopLocationUpdates()
+        apiServer.stop()
+        android.util.Log.d("MainActivity", "Servidor HTTP detenido")
     }
 }
+
