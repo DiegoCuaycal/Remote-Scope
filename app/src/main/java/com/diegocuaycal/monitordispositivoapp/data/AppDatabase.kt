@@ -6,14 +6,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [GPSData::class, ConfiguracionGPS::class],
-    version = 3,
+    entities = [GPSData::class, ConfiguracionGPS::class, Credencial::class],
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun gpsDataDao(): GPSDataDao
     abstract fun configuracionGPSDao(): ConfiguracionGPSDao
+    abstract fun credencialDao(): CredencialDao
+
 
     companion object {
         @Volatile

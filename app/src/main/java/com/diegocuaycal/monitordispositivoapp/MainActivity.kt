@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
 
         gpsManager = GPSManager(this)
         configurarRecoleccionGPS()
+        configurarCredencialesAPI()
         solicitarPermisosUbicacion()
 
         // Iniciar servidor API
@@ -84,5 +85,21 @@ class MainActivity : AppCompatActivity() {
         apiServer.stop()
         android.util.Log.d("MainActivity", "Servidor HTTP detenido")
     }
+    private fun configurarCredencialesAPI() {
+        val db = AppDatabase.getDatabase(this)
+        val dao = db.credencialDao()
+
+        val credencial = com.diegocuaycal.monitordispositivoapp.data.Credencial(
+            token = "mi_token_secreto_123",
+            usuario = "admin",
+            contrasena = "1234"
+        )
+
+        GlobalScope.launch {
+            dao.insertar(credencial)
+            android.util.Log.d("MainActivity", "Credencial API insertada: $credencial")
+        }
+    }
+
 }
 

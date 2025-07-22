@@ -1,4 +1,12 @@
 package com.diegocuaycal.monitordispositivoapp.data
 
-class Credencial {
-}
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "credenciales")
+data class Credencial(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val token: String,
+    val usuario: String,
+    val contrasena: String
+)

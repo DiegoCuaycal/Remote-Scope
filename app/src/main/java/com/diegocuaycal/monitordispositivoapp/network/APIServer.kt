@@ -5,15 +5,39 @@ import android.util.Log
 import com.diegocuaycal.monitordispositivoapp.data.AppDatabase
 import com.diegocuaycal.monitordispositivoapp.sensors.DeviceStatusHelper
 import fi.iki.elonen.NanoHTTPD
+import kotlinx.coroutines.runBlocking
 
 class APIServer(private val context: Context) : NanoHTTPD(8080) {
 
     override fun serve(session: IHTTPSession): Response {
-        return when {
-            session.uri.startsWith("/api/sensor_data") -> handleSensorData(session)
-            session.uri.startsWith("/api/device_status") -> handleDeviceStatus()
-            else -> newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "404 Not Found")
+        return if (!isAuthenticated(session)) {
+            newFixedLengthResponse(Response.Status.UNAUTHORIZED, "text/plain", "Unauthorized")
+        } else {
+            when {
+                session.uri.startsWith("/api/sensor_data") -> handleSensorData(session)
+                session.uri.startsWith("/api/device_status") -> handleDeviceStatus()
+                else -> newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "404 Not Found")
+            }
         }
+    }
+
+    private fun isAuthenticated(session: IHTTPSession): Boolean {
+        val headers = session.headers
+        val tokenRecibido = headers["authorization"]
+
+        val db = AppDatabase.getDatabase(context)
+        val dao = db.credencialDao()
+
+        // Ejecutamos en runBlocking porque obtenerCredencial es suspend
+        val credencial = runBlocking {
+            dao.obtenerCredencial()
+        }
+
+        val tokenValido = credencial?.token
+
+        Log.d("APIServer", "Token recibido: $tokenRecibido, Token válido: $tokenValido")
+
+        return tokenRecibido == tokenValido
     }
 
     private fun handleSensorData(session: IHTTPSession): Response {
@@ -40,6 +64,5 @@ class APIServer(private val context: Context) : NanoHTTPD(8080) {
 
         return newFixedLengthResponse(Response.Status.OK, "application/json", statusJson)
     }
-
-
 }
+
