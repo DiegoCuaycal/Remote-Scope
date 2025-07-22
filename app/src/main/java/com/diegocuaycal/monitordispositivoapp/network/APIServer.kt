@@ -23,22 +23,29 @@ class APIServer(private val context: Context) : NanoHTTPD(8080) {
 
     private fun isAuthenticated(session: IHTTPSession): Boolean {
         val headers = session.headers
-        val tokenRecibido = headers["authorization"]
+        val tokenRecibido = headers["authorization"]?.trim()
+        val usuarioRecibido = headers["usuario"]?.trim()
+        val contrasenaRecibida = headers["contrasena"]?.trim()
 
         val db = AppDatabase.getDatabase(context)
         val dao = db.credencialDao()
 
-        // Ejecutamos en runBlocking porque obtenerCredencial es suspend
         val credencial = runBlocking {
             dao.obtenerCredencial()
         }
 
-        val tokenValido = credencial?.token
+        val tokenValido = credencial?.token?.trim()
+        val usuarioValido = credencial?.usuario?.trim()
+        val contrasenaValida = credencial?.contrasena?.trim()
 
-        Log.d("APIServer", "Token recibido: $tokenRecibido, Token válido: $tokenValido")
+        val accesoPorToken = tokenRecibido != null && tokenRecibido == tokenValido
+        val accesoPorCredenciales = usuarioRecibido == usuarioValido && contrasenaRecibida == contrasenaValida
 
-        return tokenRecibido == tokenValido
+        Log.d("APIServer", "Autenticación: Token=$tokenRecibido, Usuario=$usuarioRecibido")
+
+        return accesoPorToken || accesoPorCredenciales
     }
+
 
     private fun handleSensorData(session: IHTTPSession): Response {
         val params = session.parameters
