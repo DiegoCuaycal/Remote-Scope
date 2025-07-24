@@ -1,25 +1,43 @@
 package com.diegocuaycal.monitordispositivoapp
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.widget.Button
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.diegocuaycal.monitordispositivoapp.sensors.GPSManager
 import com.diegocuaycal.monitordispositivoapp.data.AppDatabase
 import com.diegocuaycal.monitordispositivoapp.data.ConfiguracionGPS
+import com.diegocuaycal.monitordispositivoapp.data.Credencial
 import com.diegocuaycal.monitordispositivoapp.network.APIServer
+import com.diegocuaycal.monitordispositivoapp.sensors.DeviceStatusHelper
+import com.diegocuaycal.monitordispositivoapp.sensors.GPSManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var gpsManager: GPSManager
     private lateinit var apiServer: APIServer
+    private var recolectando = false
+
+    // UI
+    private lateinit var estadoRecoleccion: TextView
+    private lateinit var botonToggle: Button
+    private lateinit var textInfoDispositivo: TextView
+    private lateinit var textIP: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,15 +49,60 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        // Inicializar UI
+        estadoRecoleccion = findViewById(R.id.textEstadoRecoleccion)
+        botonToggle = findViewById(R.id.btnToggleRecoleccion)
+        textInfoDispositivo = findViewById(R.id.textInfoDispositivo)
+        textIP = findViewById(R.id.textIP)
+
         gpsManager = GPSManager(this)
+
         configurarRecoleccionGPS()
         configurarCredencialesAPI()
         solicitarPermisosUbicacion()
+        mostrarIPLocal()
+        mostrarInfoDispositivo()
 
         // Iniciar servidor API
         apiServer = APIServer(this)
         apiServer.start()
         android.util.Log.d("MainActivity", "Servidor HTTP iniciado en el puerto 8080")
+
+        // Listener botón
+        botonToggle.setOnClickListener {
+            if (recolectando) {
+                gpsManager.stopLocationUpdates()
+                recolectando = false
+                estadoRecoleccion.text = "Estado: Detenido"
+                botonToggle.text = "Iniciar Recolección"
+            } else {
+                gpsManager.startLocationUpdates()
+                recolectando = true
+                estadoRecoleccion.text = "Estado: En Recolección"
+                botonToggle.text = "Detener Recolección"
+            }
+        }
+    }
+
+    private fun mostrarIPLocal() {
+        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val ipAddress = wifiManager.connectionInfo.ipAddress
+        val ip = String.format(
+            "%d.%d.%d.%d",
+            ipAddress and 0xff,
+            ipAddress shr 8 and 0xff,
+            ipAddress shr 16 and 0xff,
+            ipAddress shr 24 and 0xff
+        )
+        textIP.text = "IP Local: $ip:8080"
+    }
+
+    private fun mostrarInfoDispositivo() {
+        val handler = Handler(Looper.getMainLooper())
+        handler.post {
+            val info = DeviceStatusHelper.getStatus(this).toString(4)
+            textInfoDispositivo.text = info
+        }
     }
 
     private fun solicitarPermisosUbicacion() {
@@ -47,7 +110,9 @@ class MainActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         } else {
             gpsManager.startLocationUpdates()
-            android.util.Log.d("MainActivity", "Permiso ya concedido. Iniciando GPSManager")
+            recolectando = true
+            estadoRecoleccion.text = "Estado: En Recolección"
+            botonToggle.text = "Detener Recolección"
         }
     }
 
@@ -56,9 +121,11 @@ class MainActivity : AppCompatActivity() {
     ) { isGranted: Boolean ->
         if (isGranted) {
             gpsManager.startLocationUpdates()
-            android.util.Log.d("MainActivity", "Permiso concedido en tiempo de ejecución. Iniciando GPSManager")
+            recolectando = true
+            estadoRecoleccion.text = "Estado: En Recolección"
+            botonToggle.text = "Detener Recolección"
         } else {
-            android.util.Log.d("MainActivity", "Permiso de ubicación denegado por el usuario.")
+            estadoRecoleccion.text = "Estado: Permiso Denegado"
         }
     }
 
@@ -69,27 +136,20 @@ class MainActivity : AppCompatActivity() {
         val configuracion = ConfiguracionGPS(
             id = 1,
             diasHabilitados = "2,3,4,5,6", // Lunes a Viernes
-            horaInicio = 8, // 8 AM
-            horaFin = 22    // 10 PM
+            horaInicio = 8,
+            horaFin = 22
         )
 
         GlobalScope.launch {
             dao.insertarConfiguracion(configuracion)
-            android.util.Log.d("MainActivity", "Configuración de recolección GPS guardada: $configuracion")
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        gpsManager.stopLocationUpdates()
-        apiServer.stop()
-        android.util.Log.d("MainActivity", "Servidor HTTP detenido")
-    }
     private fun configurarCredencialesAPI() {
         val db = AppDatabase.getDatabase(this)
         val dao = db.credencialDao()
 
-        val credencial = com.diegocuaycal.monitordispositivoapp.data.Credencial(
+        val credencial = Credencial(
             token = "mi_token_secreto_123",
             usuario = "admin",
             contrasena = "1234"
@@ -97,9 +157,14 @@ class MainActivity : AppCompatActivity() {
 
         GlobalScope.launch {
             dao.insertar(credencial)
-            android.util.Log.d("MainActivity", "Credencial API insertada: $credencial")
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        gpsManager.stopLocationUpdates()
+        apiServer.stop()
+    }
 }
+
 
