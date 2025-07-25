@@ -1,5 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Colores principales -->
+    <color name="colorPrimary">#2E7D9A</color>
+    <color name="colorPrimaryDark">#1E5A73</color>
+    <color name="colorPrimaryLight">#E3F2FD</color>
+
+    <!-- Colores de acento modernos -->
+    <color name="accent_primary">#2E7D9A</color>
+    <color name="accent_secondary">#4CAF50</color>
+    <color name="accent_light">#E8F4F8</color>
+    <color name="accent_warning">#FF9800</color>
+    <color name="accent_error">#F44336</color>
+
+    <!-- Backgrounds -->
+    <color name="background_primary">#F5F7FA</color>
+    <color name="background_secondary">#FFFFFF</color>
+
+    <!-- Cards estadísticas -->
+    <color name="card_stats_1">#667EEA</color>
+    <color name="card_stats_2">#764BA2</color>
+
+    <!-- Textos -->
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_hint">#999999</color>
+
+    <!-- Estados -->
+    <color name="status_active">#4CAF50</color>
+    <color name="status_inactive">#FF5722</color>
+    <color name="status_warning">#FF9800</color>
+
+    <!-- Elementos UI -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="white_transparent">#B3FFFFFF</color>
+
+    <!-- Estados de red -->
+    <color name="network_connected">#4CAF50</color>
+    <color name="network_disconnected">#F44336</color>
+
+    <!-- Colores adicionales para mejor UI -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="toolbar_text">#FFFFFF</color>
+    <color name="toolbar_subtitle">#E0F2F1</color>
+    <color name="button_text">#FFFFFF</color>
+    <color name="outline_button_text">#2E7D9A</color>
 </resources>

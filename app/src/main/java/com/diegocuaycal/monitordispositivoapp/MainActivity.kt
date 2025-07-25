@@ -23,6 +23,8 @@ import com.diegocuaycal.monitordispositivoapp.sensors.DeviceStatusHelper
 import com.diegocuaycal.monitordispositivoapp.sensors.GPSManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+
+
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.util.*
@@ -39,6 +41,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textInfoDispositivo: TextView
     private lateinit var textIP: TextView
 
+    // Handler para actualizar estado
+    private val handler = Handler(Looper.getMainLooper())
+    private val estadoUpdater = object : Runnable {
+        override fun run() {
+            mostrarInfoDispositivo()
+            handler.postDelayed(this, 10000) // cada 10 segundos
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -49,7 +60,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Inicializar UI
         estadoRecoleccion = findViewById(R.id.textEstadoRecoleccion)
         botonToggle = findViewById(R.id.btnToggleRecoleccion)
         textInfoDispositivo = findViewById(R.id.textInfoDispositivo)
@@ -61,27 +71,30 @@ class MainActivity : AppCompatActivity() {
         configurarCredencialesAPI()
         solicitarPermisosUbicacion()
         mostrarIPLocal()
-        mostrarInfoDispositivo()
+
+        // Listener botón
+        botonToggle.setOnClickListener {
+            if (recolectando) {
+                gpsManager.stopLocationUpdates()
+                handler.removeCallbacks(estadoUpdater)
+                recolectando = false
+                estadoRecoleccion.text = "Estado: Detenido"
+                botonToggle.text = "Iniciar Recolección"
+            } else {
+                gpsManager.startLocationUpdates()
+                handler.post(estadoUpdater)
+                recolectando = true
+                estadoRecoleccion.text = "Estado: En Recolección"
+                botonToggle.text = "Detener Recolección"
+            }
+        }
 
         // Iniciar servidor API
         apiServer = APIServer(this)
         apiServer.start()
         android.util.Log.d("MainActivity", "Servidor HTTP iniciado en el puerto 8080")
 
-        // Listener botón
-        botonToggle.setOnClickListener {
-            if (recolectando) {
-                gpsManager.stopLocationUpdates()
-                recolectando = false
-                estadoRecoleccion.text = "Estado: Detenido"
-                botonToggle.text = "Iniciar Recolección"
-            } else {
-                gpsManager.startLocationUpdates()
-                recolectando = true
-                estadoRecoleccion.text = "Estado: En Recolección"
-                botonToggle.text = "Detener Recolección"
-            }
-        }
+        mostrarInfoDispositivo()
     }
 
     private fun mostrarIPLocal() {
@@ -98,11 +111,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun mostrarInfoDispositivo() {
-        val handler = Handler(Looper.getMainLooper())
-        handler.post {
-            val info = DeviceStatusHelper.getStatus(this).toString(4)
-            textInfoDispositivo.text = info
-        }
+        val info = DeviceStatusHelper.getStatus(this).toString(4)
+        textInfoDispositivo.text = info
     }
 
     private fun solicitarPermisosUbicacion() {
@@ -110,6 +120,7 @@ class MainActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         } else {
             gpsManager.startLocationUpdates()
+            handler.post(estadoUpdater)
             recolectando = true
             estadoRecoleccion.text = "Estado: En Recolección"
             botonToggle.text = "Detener Recolección"
@@ -121,6 +132,7 @@ class MainActivity : AppCompatActivity() {
     ) { isGranted: Boolean ->
         if (isGranted) {
             gpsManager.startLocationUpdates()
+            handler.post(estadoUpdater)
             recolectando = true
             estadoRecoleccion.text = "Estado: En Recolección"
             botonToggle.text = "Detener Recolección"
@@ -164,6 +176,7 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         gpsManager.stopLocationUpdates()
         apiServer.stop()
+        handler.removeCallbacks(estadoUpdater)
     }
 }
 
