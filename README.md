@@ -1,11 +1,14 @@
-#  RemoteScope - Sistema de Monitoreo Remoto de Dispositivos Android
+<p align="center">
+  <img src="LogoRemoteScope.png" alt="Logo de RemoteScope" width="300"/>
+</p>
 
-![Logo de RemoteScope](ruta/a/tu/logo.png)
+<p align="center"><i>Sistema de Monitoreo Remoto de Dispositivos Android</i></p>
 
-**RemoteScope** es una aplicación móvil desarrollada en Android que permite **monitorear el estado de un dispositivo Android** de forma remota. Recolecta automáticamente datos como ubicación GPS, batería, almacenamiento, red y los expone a través de una **API REST embebida**, protegida por autenticación.
+---
 
->  Repositorio oficial: [https://github.com/DiegoCuaycal/Remote-Scope.git](https://github.com/DiegoCuaycal/Remote-Scope.git)
+**Es una aplicación móvil desarrollada en Android que permite monitorear el estado de un dispositivo Android** de forma remota. Recolecta automáticamente datos como ubicación GPS, batería, almacenamiento, red y los expone a través de una **API REST embebida**, protegida por autenticación.
 
+> 📁 Repositorio oficial: [https://github.com/DiegoCuaycal/Remote-Scope.git](https://github.com/DiegoCuaycal/Remote-Scope.git)
 ---
 
 ## ✨ Características principales
@@ -71,15 +74,17 @@ Token: mi_token_secreto_123
 - La aplicación se iniciará y mostrará la IP local en pantalla (ej: 192.168.1.150:8080)
 
 ## 🚀 Cómo Usar RemoteScope
- 1. Iniciar monitoreo
- Presiona "Iniciar Recolección" para comenzar el servicio GPS y activar el servidor web.
 
- 2. Consultar API REST
- Desde un navegador o Postman en una computadora conectada a la misma red WiFi, accede a los siguientes endpoints:
+1. **Iniciar monitoreo**  
+   Presiona el botón **"Iniciar Recolección"** dentro de la aplicación para comenzar el servicio GPS y activar el servidor web embebido.
+
+2. **Consultar API REST**  
+   Desde un navegador web o herramienta como **Postman**, en una computadora conectada a la **misma red WiFi** que el dispositivo Android, accede a los endpoints expuestos por la API.
+
 
 ## 📡 Endpoints de la API
 
-### ✅ Endpoint 1: Estado del Dispositivo
+### Endpoint 1: Estado del Dispositivo
 
 - **URL:** `http://<IP_DEL_DISPOSITIVO>:8080/api/device_status`
 - **Método:** `GET`
@@ -96,7 +101,7 @@ curl -X GET http://192.168.1.150:8080/api/device_status \
   -H "Authorization: mi_token_secreto_123"
 ```
 
-### ✅ Endpoint 2: Datos del Sensor GPS
+### Endpoint 2: Datos del Sensor GPS
 
 - **URL:** `http://<IP_DEL_DISPOSITIVO>:8080/api/sensor_data?start_time=<timestamp>&end_time=<timestamp>`
 - **Método:** `GET`
