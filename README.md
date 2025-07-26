@@ -120,4 +120,20 @@ curl -X GET http://192.168.1.150:8080/api/device_status \
 curl -X GET "http://192.168.1.150:8080/api/sensor_data?start_time=1690000000000&end_time=1990000000000" \
   -H "Authorization: mi_token_secreto_123"
 ```
+## 📌 Consideraciones
+
+- La aplicación debe estar en primer plano o con el servicio en ejecución para mantener activo el servidor.
+- Es necesario conceder permisos de ubicación al instalar por primera vez.
+- Verifica que el dispositivo y la PC estén en la misma red para que el API sea accesible.
+
+## ✍️ Autor
+
+- **Diego Cuaycal**  
+  Estudiante de Ingeniería en Software - Universidad Técnica del Norte  
+  GitHub: [@DiegoCuaycal](https://github.com/DiegoCuaycal)
+
+## 📄 Licencia
+
+- Este proyecto está licenciado bajo la Licencia MIT.  Consulta el archivo [LICENSE](./LICENSE) para más detalles.
+
 
