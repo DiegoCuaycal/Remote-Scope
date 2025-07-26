@@ -120,6 +120,15 @@ curl -X GET http://192.168.1.150:8080/api/device_status \
 curl -X GET "http://192.168.1.150:8080/api/sensor_data?start_time=1690000000000&end_time=1990000000000" \
   -H "Authorization: mi_token_secreto_123"
 ```
+## 📱 Captura de la Aplicación
+
+A continuación se muestra una imagen de la aplicación **RemoteScope** en ejecución desde un dispositivo Android:
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/22ab1678-3a3d-4547-8bf6-344168a54f66" alt="Captura de RemoteScope" width="300"/>
+</p>
+
+
 ## 📌 Consideraciones
 
 - La aplicación debe estar en primer plano o con el servicio en ejecución para mantener activo el servidor.
